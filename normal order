@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE ARCHIVE | 档案馆酒单</title>
+    <style>
+        :root {
+            --accent: #d4af37;
+            --bg: #050505;
+            --card-bg: #111;
+            --text: #e0e0e0;
+            --dim: #555;
+            --border: #1a1a1a;
+        }
+        body {
+            font-family: 'PingFang SC', 'Source Han Serif SC', serif;
+            background-color: var(--bg); color: var(--text);
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .container { width: 100%; max-width: 600px; }
+        header { text-align: left; margin-bottom: 35px; border-left: 3px solid var(--accent); padding-left: 15px; }
+        h1 { font-weight: 300; letter-spacing: 6px; margin: 0; font-size: 1.6rem; color: #fff; }
+        
+        .scroller { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
+        .scroller::-webkit-scrollbar { display: none; }
+        .nav-btn { padding: 10px 18px; background: transparent; border: 1px solid var(--border); color: var(--dim); font-size: 0.75rem; white-space: nowrap; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(212, 175, 55, 0.05); }
+
+        .filter-group { display: flex; gap: 8px; margin-bottom: 25px; }
+        .filter-tag { font-size: 0.7rem; padding: 6px 12px; border: 1px solid var(--border); color: #666; cursor: pointer; border-radius: 2px; }
+        .filter-tag.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        .cocktail-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+        .cocktail-item { background: var(--bg); padding: 22px 18px; cursor: pointer; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-size: 1.15rem; color: var(--accent); font-family: serif; }
+        .item-meta { font-size: 0.65rem; color: #444; border: 1px solid #222; padding: 2px 4px; }
+        .item-desc { font-size: 0.8rem; color: #666; margin-top: 6px; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-inner { width: 100%; max-width: 400px; background: #0c0c0c; border: 1px solid var(--accent); padding: 30px; box-sizing: border-box; position: relative; }
+        .modal-title { font-size: 1.6rem; color: var(--accent); font-family: serif; margin-bottom: 8px; }
+        .modal-story { font-style: italic; color: #999; line-height: 1.6; margin: 20px 0; font-size: 0.9rem; border-left: 2px solid var(--accent); padding-left: 15px; }
+        
+        .label-text { display: block; font-size: 0.65rem; color: #666; margin: 15px 0 5px 0; letter-spacing: 1px; }
+        select { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #333; font-size: 0.9rem; border-radius: 0; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; padding: 12px 0; }
+        .stat-label { display: block; font-size: 0.6rem; color: #444; margin-bottom: 4px; }
+        .stat-val { color: var(--accent); font-size: 0.8rem; }
+
+        .order-btn { width: 100%; padding: 18px; background: var(--accent); border: none; font-weight: bold; cursor: pointer; color: #000; font-size: 0.95rem; letter-spacing: 4px; margin-top: 20px; }
+        .close-x { position: absolute; top: 15px; right: 20px; color: var(--dim); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>THE ARCHIVE</h1>
+        <p style="font-size: 0.65rem; color: var(--dim); letter-spacing: 2px; margin: 5px 0 0 0;">液态记忆档案馆</p>
+    </header>
+
+    <div class="scroller" id="nav">
+        <button class="nav-btn active" onclick="switchTab('Whisky', this)">威士忌基调</button>
+        <button class="nav-btn" onclick="switchTab('Gin', this)">金酒基调</button>
+        <button class="nav-btn" onclick="switchTab('Rum', this)">朗姆基调</button>
+        <button class="nav-btn" onclick="switchTab('Vodka', this)">伏特加基调</button>
+        <button class="nav-btn" onclick="switchTab('Tequila', this)">龙舌兰基调</button>
+        <button class="nav-btn" onclick="switchTab('Brandy', this)">白兰地/其他</button>
+    </div>
+
+    <div class="filter-group">
+        <div class="filter-tag active" onclick="setFilter('all', this)">全部</div>
+        <div class="filter-tag" onclick="setFilter('sour', this)">偏酸</div>
+        <div class="filter-tag" onclick="setFilter('sweet', this)">偏甜</div>
+        <div class="filter-tag" onclick="setFilter('strong', this)">烈性</div>
+    </div>
+
+    <div id="cocktailGrid" class="cocktail-grid"></div>
+</div>
+
+<div id="detailModal" class="modal">
+    <div class="modal-inner">
+        <span class="close-x" onclick="closeModal()">✕</span>
+        <div id="m-title" class="modal-title"></div>
+        <div id="m-ing" style="font-size: 0.7rem; color: #555;"></div>
+        
+        <div class="stat-grid">
+            <div><span class="stat-label">酒精度</span><span id="m-abv" class="stat-val"></span></div>
+            <div><span class="stat-label">酸度</span><span id="m-sour" class="stat-val"></span></div>
+            <div><span class="stat-label">甜度</span><span id="m-sweet" class="stat-val"></span></div>
+        </div>
+
+        <div id="m-story" class="modal-story"></div>
+
+        <span class="label-text">选择基酒品牌 / Select Spirit</span>
+        <select id="brandSelect" onchange="updatePrice()"></select>
+
+        <button class="order-btn" id="confirmBtn" onclick="placeOrder()">确认点单 · ￥<span id="m-price"></span></button>
+    </div>
+</div>
+
+<script>
+    const PUSHDEER_KEY = "PDU40747TdeTeirMy2wQe12azBvWvUBOk9S5WjMtt"; 
+
+    const pricing = {
+        "Whisky": [{brand:"尊尼获加黑方",price:78},{brand:"三得利角瓶",price:88},{brand:"四玫瑰波本",price:98},{brand:"格兰菲迪 12Y",price:128},{brand:"拉弗格 10Y",price:148}],
+        "Gin": [{brand:"哥顿金酒",price:78},{brand:"添加利",price:88},{brand:"亨利爵士",price:98},{brand:"猴王 47",price:148}],
+        "Rum": [{brand:"百加得白",price:68},{brand:"摩根船长黑",price:78},{brand:"外交官精选",price:118}],
+        "DEFAULT": 78
+    };
+
+    const cocktailDB = {
+        "Whisky": [
+            { name: "海波 (Highball)", ing: "威士忌、苏打水、柠檬", abv: 12, sour: 2, sweet: 1, story: "苏打水的气泡带走了陈年的沉重，留下木质清香。" },
+            { name: "古典 (Old Fashioned)", ing: "威士忌、方糖、苦精", abv: 32, sour: 0, sweet: 3, story: "在方糖消融的过程中，品味威士忌最原始的尊严。" },
+            { name: "威士忌酸 (Whisky Sour)", ing: "威士忌、柠檬、蛋白", abv: 18, sour: 4, sweet: 3, story: "丝滑蛋白包裹着柠檬的酸涩，像是在舌尖跳的华尔兹。" },
+            { name: "盘尼西林 (Penicillin)", ing: "泥煤、姜、蜂蜜、柠檬", abv: 20, sour: 4, sweet: 3, story: "烟熏泥煤与生姜的碰撞，是深夜里最好的处方。" },
+            { name: "教父 (Godfather)", ing: "威士忌、杏仁利口酒", abv: 30, sour: 0, sweet: 4, story: "如果你无法拒绝这个提议，就点这一杯。" },
+            { name: "花花公子 (Boulevardier)", ing: "威士忌、金巴利、甜味美思", abv: 28, sour: 1, sweet: 3, story: "尼格罗尼的威士忌变奏，多了几分深秋的萧瑟感。" },
+            { name: "纽约酸 (New York Sour)", ing: "威士忌、柠檬、红葡萄酒", abv: 19, sour: 4, sweet: 2, story: "红酒浮层如黄昏暮色，美得令人心碎。" },
+            { name: "萨则拉克 (Sazerac)", ing: "威士忌、苦艾酒、苦精", abv: 35, sour: 0, sweet: 2, story: "古老的新奥尔良灵魂，药草香挥之不去。" }
+        ],
+        "Gin": [
+            { name: "金汤力 (Gin Tonic)", ing: "金酒、汤力水、青柠", abv: 14, sour: 2, sweet: 2, story: "杜松子与奎宁的经典结合，简单且永远正确。" },
+            { name: "尼格罗尼 (Negroni)", ing: "金酒、金巴利、甜味美思", abv: 28, sour: 1, sweet: 3, story: "苦甜平衡的教科书，人生一半是苦涩，一半是回甘。" },
+            { name: "干马天尼 (Dry Martini)", ing: "金酒、干味美思", abv: 35, sour: 0, sweet: 0, story: "极简主义的巅峰，不容许任何多余的修饰。" },
+            { name: "白色佳人 (White Lady)", ing: "金酒、君度、柠檬汁", abv: 25, sour: 4, sweet: 2, story: "晶莹剔透，入口清凉，像穿过雾气的晨曦。" },
+            { name: "飞行 (Aviation)", ing: "金酒、樱桃酒、紫罗兰", abv: 22, sour: 3, sweet: 2, story: "那一抹淡淡的紫色，捕捉了黄金飞行时代的忧郁。" },
+            { name: "三叶草俱乐部", ing: "金酒、树莓、柠檬、蛋白", abv: 18, sour: 4, sweet: 3, story: "粉红色的外表下，是极为厚实的草本底蕴。" },
+            { name: "死亡午后", ing: "苦艾酒、香槟", abv: 20, sour: 1, sweet: 2, story: "海明威式的狂热，清爽中带着致命的后劲。" },
+            { name: "二十世纪 (20th Century)", ing: "金酒、利莱白、可可、柠檬", abv: 22, sour: 3, sweet: 3, story: "可可的余韵伴随着柑橘香，穿越时空的经典。" }
+        ],
+        "Rum": [
+            { name: "大吉利 (Daiquiri)", ing: "朗姆酒、青柠、糖", abv: 18, sour: 4, sweet: 2, story: "海明威在古巴深夜的慰藉，极致简洁的平衡之美。" },
+            { name: "莫希托 (Mojito)", ing: "朗姆酒、薄荷、苏打水", abv: 12, sour: 3, sweet: 4, story: "新鲜薄荷在杯底破碎，那是加勒比海的风。" },
+            { name: "僵尸 (Zombie)", ing: "多款朗姆、苦艾、果汁", abv: 38, sour: 3, sweet: 5, story: "极高酒精度的幻觉，由于太猛，每人限点两杯。" },
+            { name: "月黑风高 (Dark N Stormy)", ing: "黑朗姆、姜汁啤酒、青柠", abv: 15, sour: 2, sweet: 4, story: "暴雨降至的海面，辛辣且动荡不安。" },
+            { name: "迈泰 (Mai Tai)", ing: "陈年朗姆、杏仁、青柠", abv: 22, sour: 3, sweet: 4, story: "大溪地语的意思是‘此物只应天上有’。" },
+            { name: "海明威特调", ing: "朗姆、西柚、樱桃酒、青柠", abv: 20, sour: 4, sweet: 1, story: "不加糖的双倍份量，硬汉的选择。" },
+            { name: "皮纳卡拉达 (Piña Colada)", ing: "朗姆、菠萝汁、椰奶", abv: 12, sour: 1, sweet: 5, story: "热带岛屿的液态阳光，浓郁奶香。" }
+        ],
+        "Vodka": [
+            { name: "意式浓缩马天尼", ing: "伏特加、浓缩咖啡、咖啡酒", abv: 22, sour: 0, sweet: 4, story: "醒脑且醉人，它是深夜派对重启的唯一开关。" },
+            { name: "大都市 (Cosmopolitan)", ing: "伏特加、蔓越莓、君度", abv: 18, sour: 3, sweet: 4, story: "霓虹下的粉色液体，都市欲望的现代诗篇。" },
+            { name: "莫斯科骡子", ing: "伏特加、姜汁啤酒、青柠", abv: 14, sour: 3, sweet: 3, story: "铜杯里的清凉感，生姜的辛辣击碎了沉闷。" },
+            { name: "黑俄罗斯", ing: "伏特加、咖啡利口酒", abv: 25, sour: 0, sweet: 4, story: "像北国的冬夜一样深沉且带有甜意。" },
+            { name: "吉普赛女郎", ing: "伏特加、接骨木花、西柚", abv: 16, sour: 3, sweet: 3, story: "清爽的花香调，轻盈得像一阵晚风。" },
+            { name: "维斯帕 (Vesper)", ing: "伏特加、金酒、利莱白", abv: 35, sour: 0, sweet: 1, story: "摇匀，不要搅拌。邦德的挚爱。" }
+        ],
+        "Tequila": [
+            { name: "玛格丽特 (Margarita)", ing: "龙舌兰、君度、青柠", abv: 24, sour: 4, sweet: 2, story: "盐边的苦咸是为了衬托那一抹心碎的辛烈。" },
+            { name: "帕洛玛 (Paloma)", ing: "龙舌兰、西柚、苏打水", abv: 14, sour: 4, sweet: 3, story: "西柚的清苦感，是龙舌兰最默契的伴侣。" },
+            { name: "裸体与著名的", ing: "梅斯卡尔、阿佩罗、黄药草", abv: 22, sour: 4, sweet: 3, story: "烟熏、酸度与草本的奇妙平衡。" },
+            { name: "特基拉日出", ing: "龙舌兰、橙汁、石榴糖浆", abv: 12, sour: 1, sweet: 5, story: "杯中凝结的墨西哥晨曦，色彩斑斓。" },
+            { name: "斗牛士 (Matador)", ing: "龙舌兰、菠萝汁、青柠", abv: 15, sour: 3, sweet: 4, story: "果香浓郁，掩盖了龙舌兰的锋芒。" }
+        ],
+        "Brandy": [
+            { name: "边车 (Sidecar)", ing: "白兰地、君度、柠檬", abv: 28, sour: 4, sweet: 2, story: "跨越一战后的巴黎，它是白兰地最优雅的形态。" },
+            { name: "亚历山大 (Alexander)", ing: "白兰地、可可酒、奶油", abv: 18, sour: 0, sweet: 5, story: "如同液态巧克力般丝滑，晚宴的最佳收尾。" },
+            { name: "长岛冰茶", ing: "五款基酒、可乐、柠檬", abv: 32, sour: 3, sweet: 4, story: "披着茶的外衣，内里是足以点燃夜晚的烈火。" },
+            { name: "日本 (Japanese)", ing: "白兰地、红石榴、杏仁糖浆", abv: 26, sour: 1, sweet: 4, story: "维多利亚时代的复古配方，带有深邃的坚果气息。" },
+            { name: "马头琴特调", ing: "白兰地、内蒙特产奶酪利口、奶皮子", abv: 22, sour: 0, sweet: 5, story: "向塞外致敬，极致的奶香与高度酒的碰撞。" }
+        ]
+    };
+
+    let currentTab = "Whisky";
+    let currentFilter = "all";
+    let activeItem = null;
+
+    function switchTab(cat, btn) {
+        currentTab = cat;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderList();
+    }
+
+    function setFilter(f, btn) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        renderList();
+    }
+
+    function renderList() {
+        const grid = document.getElementById('cocktailGrid');
+        let list = cocktailDB[currentTab] || [];
+        if (currentFilter === 'sour') list = list.filter(i => i.sour >= 3);
+        if (currentFilter === 'sweet') list = list.filter(i => i.sweet >= 3);
+        if (currentFilter === 'strong') list = list.filter(i => i.abv >= 25);
+
+        grid.innerHTML = list.map(item => `
+            <div class="cocktail-item" onclick="openDetail('${item.name}')">
+                <div class="item-row">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-meta">ABV ${item.abv}%</span>
+                </div>
+                <div class="item-desc">${item.ing}</div>
+            </div>
+        `).join('');
+    }
+
+    function openDetail(name) {
+        activeItem = cocktailDB[currentTab].find(i => i.name === name);
+        document.getElementById('m-title').innerText = activeItem.name;
+        document.getElementById('m-ing').innerText = activeItem.ing;
+        document.getElementById('m-story').innerText = activeItem.story;
+        document.getElementById('m-abv').innerText = activeItem.abv + "%";
+        document.getElementById('m-sour').innerText = '●'.repeat(activeItem.sour) + '○'.repeat(5-activeItem.sour);
+        document.getElementById('m-sweet').innerText = '●'.repeat(activeItem.sweet) + '○'.repeat(5-activeItem.sweet);
+
+        const bSelect = document.getElementById('brandSelect');
+        if (pricing[currentTab]) {
+            bSelect.style.display = 'block';
+            bSelect.innerHTML = pricing[currentTab].map(b => `<option value="${b.price}">${b.brand} - ￥${b.price}</option>`).join('');
+        } else { bSelect.style.display = 'none'; }
+        
+        updatePrice();
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function updatePrice() {
+        let price = pricing.DEFAULT;
+        if (pricing[currentTab]) price = document.getElementById('brandSelect').value;
+        document.getElementById('m-price').innerText = price;
+    }
+
+    function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+    async function placeOrder() {
+        const btn = document.getElementById('confirmBtn');
+        const brand = document.getElementById('brandSelect').options[document.getElementById('brandSelect').selectedIndex]?.text || "标准配方";
+        const price = document.getElementById('m-price').innerText;
+        
+        const msg = `🍸 [新订单]\n酒款：${activeItem.name}\n基酒：${brand}\n价格：￥${price}\n详情：ABV ${activeItem.abv}% | 酸度 ${activeItem.sour} | 甜度 ${activeItem.sweet}`;
+
+        btn.innerText = "发送指令...";
+        btn.disabled = true;
+
+        try {
+            await fetch(`https://api2.pushdeer.com/message/push?pushkey=${PUSHDEER_KEY}&text=${encodeURIComponent(msg)}`);
+            btn.innerText = "下单成功 ✓";
+            btn.style.background = "#28a745";
+            setTimeout(() => {
+                closeModal();
+                btn.innerText = "确认点单";
+                btn.disabled = false;
+                btn.style.background = "#d4af37";
+            }, 1200);
+        } catch (e) {
+            alert("由于网络原因下单失败");
+            btn.innerText = "重试";
+            btn.disabled = false;
+        }
+    }
+
+    renderList();
+</script>
+</body>
+</html>
