@@ -23,18 +23,15 @@
         header { text-align: left; margin-bottom: 35px; border-left: 3px solid var(--accent); padding-left: 15px; }
         h1 { font-weight: 300; letter-spacing: 6px; margin: 0; font-size: 1.6rem; color: #fff; }
         
-        /* 分类导航 */
         .scroller { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; width: 100%; }
         .scroller::-webkit-scrollbar { display: none; }
         .nav-btn { padding: 10px 18px; background: transparent; border: 1px solid var(--border); color: var(--dim); font-size: 0.75rem; white-space: nowrap; cursor: pointer; transition: 0.3s; }
         .nav-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(212, 175, 55, 0.05); }
 
-        /* 筛选标签 */
         .filter-group { display: flex; gap: 8px; margin-bottom: 25px; width: 100%; overflow-x: auto; scrollbar-width: none; }
         .filter-tag { font-size: 0.7rem; padding: 6px 12px; border: 1px solid var(--border); color: #666; cursor: pointer; border-radius: 2px; white-space: nowrap; }
         .filter-tag.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-        /* 酒单列表 */
         .cocktail-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); width: 100%; }
         .cocktail-item { background: var(--bg); padding: 22px 18px; cursor: pointer; }
         .item-row { display: flex; justify-content: space-between; align-items: center; }
@@ -42,7 +39,6 @@
         .item-meta { font-size: 0.65rem; color: #444; border: 1px solid #222; padding: 2px 4px; }
         .item-desc { font-size: 0.8rem; color: #666; margin-top: 6px; line-height: 1.4; }
 
-        /* 弹窗样式 */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-inner { width: 100%; max-width: 400px; background: #0c0c0c; border: 1px solid var(--accent); padding: 30px; box-sizing: border-box; position: relative; }
         .modal-title { font-size: 1.6rem; color: var(--accent); font-family: serif; margin-bottom: 8px; }
@@ -76,9 +72,9 @@
 
     <div class="filter-group">
         <div class="filter-tag active" onclick="setFilter('all', this)">全部</div>
-        <div class="filter-tag" onclick="setFilter('sour', this)">偏酸 (Sour)</div>
-        <div class="filter-tag" onclick="setFilter('sweet', this)">偏甜 (Sweet)</div>
-        <div class="filter-tag" onclick="setFilter('strong', this)">烈性 (Strong)</div>
+        <div class="filter-tag" onclick="setFilter('sour', this)">偏酸</div>
+        <div class="filter-tag" onclick="setFilter('sweet', this)">偏甜</div>
+        <div class="filter-tag" onclick="setFilter('strong', this)">烈性</div>
     </div>
 
     <div id="cocktailGrid" class="cocktail-grid"></div>
@@ -117,34 +113,64 @@
 
     const cocktailDB = {
         "Whisky": [
-            { name: "海波 (Highball)", ing: "威士忌、苏打水、柠檬", abv: 12, sour: 2, sweet: 1, story: "苏打水的气泡释放了陈年的木质芬芳，清爽首选。" },
+            { name: "海波 (Highball)", ing: "威士忌、苏打水、柠檬", abv: 12, sour: 2, sweet: 1, story: "气泡释放了木质芬芳，简单却永远正确。" },
             { name: "古典 (Old Fashioned)", ing: "威士忌、方糖、苦精", abv: 32, sour: 0, sweet: 3, story: "慢下来，在冰球消融中感受琥珀色的重量。" },
-            { name: "威士忌酸 (Whisky Sour)", ing: "威士忌、柠檬、蛋白", abv: 18, sour: 4, sweet: 3, story: "绸缎般的口感包裹着清脆的酸度。" },
+            { name: "威士忌酸 (Whisky Sour)", ing: "威士忌、柠檬、蛋白", abv: 18, sour: 4, sweet: 3, story: "绸缎般的口感，酸甜平衡的巅峰。" },
             { name: "盘尼西林 (Penicillin)", ing: "泥煤、姜、蜂蜜、柠檬", abv: 20, sour: 4, sweet: 3, story: "烟熏泥煤与生姜碰撞出的液态疗愈。" },
-            { name: "教父 (Godfather)", ing: "威士忌、杏仁利口酒", abv: 30, sour: 0, sweet: 4, story: "无法拒绝的杏仁香气，深沉且甘甜。" }
+            { name: "教父 (Godfather)", ing: "威士忌、杏仁利口酒", abv: 30, sour: 0, sweet: 4, story: "如果你无法拒绝这个提议，就点这一杯。" },
+            { name: "花花公子 (Boulevardier)", ing: "威士忌、金巴利、甜味美思", abv: 28, sour: 1, sweet: 3, story: "尼格罗尼的威士忌变奏，多了几分深秋感。" },
+            { name: "纽约酸 (New York Sour)", ing: "威士忌、柠檬、红葡萄酒", abv: 19, sour: 4, sweet: 2, story: "红酒浮层如黄昏暮色，美得令人心碎。" },
+            { name: "曼哈顿 (Manhattan)", ing: "威士忌、甜味美思、苦精", abv: 30, sour: 0, sweet: 3, story: "被称为鸡尾酒皇后，优雅且稳重。" },
+            { name: "罗伯罗伊 (Rob Roy)", ing: "苏格兰威士忌、味美思", abv: 29, sour: 0, sweet: 3, story: "苏格兰版本的曼哈顿，烟熏感更重。" }
         ],
         "Gin": [
-            { name: "金汤力 (Gin Tonic)", ing: "金酒、汤力水、青柠", abv: 14, sour: 2, sweet: 2, story: "杜松子与奎宁的经典结合，简单且永远正确。" },
-            { name: "尼格罗尼 (Negroni)", ing: "金酒、金巴利、甜味美思", abv: 28, sour: 1, sweet: 3, story: "苦甜平衡的教科书，人生一半是苦涩，一半是回甘。" },
-            { name: "干马天尼 (Dry Martini)", ing: "金酒、干味美思", abv: 35, sour: 0, sweet: 0, story: "极简主义的巅峰，不容许任何多余的修饰。" },
-            { name: "白色佳人 (White Lady)", ing: "金酒、君度、柠檬汁", abv: 25, sour: 4, sweet: 2, story: "晶莹剔透，入口清凉，像穿过雾气的晨曦。" }
+            { name: "金汤力 (Gin Tonic)", ing: "金酒、汤力水、青柠", abv: 14, sour: 2, sweet: 2, story: "杜松子与奎宁的经典结合，解渴首选。" },
+            { name: "尼格罗尼 (Negroni)", ing: "金酒、金巴利、甜味美思", abv: 28, sour: 1, sweet: 3, story: "人生一半是苦涩，一半是回甘。" },
+            { name: "干马天尼 (Dry Martini)", ing: "金酒、干味美思", abv: 35, sour: 0, sweet: 0, story: "不容许任何多余修饰的极简主义巅峰。" },
+            { name: "白色佳人 (White Lady)", ing: "金酒、君度、柠檬汁", abv: 25, sour: 4, sweet: 2, story: "晶莹剔透，入口清凉，像穿过雾气的晨曦。" },
+            { name: "金菲士 (Gin Fizz)", ing: "金酒、柠檬、苏打水、糖", abv: 12, sour: 3, sweet: 3, story: "充满活力的气泡，是夏日午后的清爽。" },
+            { name: "飞行 (Aviation)", ing: "金酒、樱桃酒、紫罗兰", abv: 22, sour: 3, sweet: 2, story: "淡淡的紫色捕捉了黄金飞行时代的忧郁。" },
+            { name: "三叶草俱乐部", ing: "金酒、树莓、柠檬、蛋白", abv: 18, sour: 4, sweet: 3, story: "粉红色的外表下，是极为厚实的草本底蕴。" },
+            { name: "二十世纪 (20th Century)", ing: "金酒、利莱白、可可、柠檬", abv: 22, sour: 3, sweet: 3, story: "可可的余韵伴随着柑橘香。" },
+            { name: "新加坡司令", ing: "金酒、樱桃酒、菠萝汁", abv: 16, sour: 2, sweet: 5, story: "复杂而迷人的东南亚风情。" }
         ],
         "Rum": [
-            { name: "大吉利 (Daiquiri)", ing: "朗姆酒、青柠、糖", abv: 18, sour: 4, sweet: 2, story: "极致简洁的平衡之美，考验吧台基本功。" },
+            { name: "大吉利 (Daiquiri)", ing: "朗姆酒、青柠、糖", abv: 18, sour: 4, sweet: 2, story: "海明威在古巴深夜的慰藉，平衡之美。" },
             { name: "莫希托 (Mojito)", ing: "朗姆酒、薄荷、苏打水", abv: 12, sour: 3, sweet: 4, story: "新鲜薄荷在杯底破碎，那是加勒比海的风。" },
-            { name: "僵尸 (Zombie)", ing: "多款朗姆、果汁、苦艾", abv: 38, sour: 3, sweet: 5, story: "由于酒精太猛，每人限点两杯。" }
+            { name: "僵尸 (Zombie)", ing: "多款朗姆、果汁、苦艾", abv: 38, sour: 3, sweet: 5, story: "极高酒精度的幻觉，每人限点两杯。" },
+            { name: "月黑风高 (Dark N Stormy)", ing: "黑朗姆、姜汁啤酒、青柠", abv: 15, sour: 2, sweet: 4, story: "暴雨降至的海面，辛辣且动荡不安。" },
+            { name: "迈泰 (Mai Tai)", ing: "陈年朗姆、杏仁、青柠", abv: 22, sour: 3, sweet: 4, story: "此物只应天上有。" },
+            { name: "皮纳卡拉达 (Piña Colada)", ing: "朗姆、菠萝汁、椰奶", abv: 12, sour: 1, sweet: 5, story: "热带岛屿的液态阳光。" },
+            { name: "自由古巴", ing: "朗姆、可乐、青柠", abv: 14, sour: 2, sweet: 4, story: "简单直接的经典选择。" },
+            { name: "皇家百慕大", ing: "朗姆、君度、金酒、果汁", abv: 25, sour: 3, sweet: 3, story: "复杂的结构，优雅的呈现。" }
         ],
         "Vodka": [
-            { name: "意式浓缩马天尼", ing: "伏特加、浓缩咖啡、咖啡酒", abv: 22, sour: 0, sweet: 4, story: "醒脑且醉人，它是深夜派对重启的唯一开关。" },
-            { name: "大都市 (Cosmopolitan)", ing: "伏特加、蔓越莓、君度", abv: 18, sour: 3, sweet: 4, story: "霓虹下的粉色液体，都市欲望的现代诗篇。" }
+            { name: "意式浓缩马天尼", ing: "伏特加、咖啡、咖啡酒", abv: 22, sour: 0, sweet: 4, story: "醒脑且醉人，深夜派对重启的唯一开关。" },
+            { name: "大都市 (Cosmopolitan)", ing: "伏特加、蔓越莓、君度", abv: 18, sour: 3, sweet: 4, story: "霓虹下的粉色液体。" },
+            { name: "莫斯科骡子", ing: "伏特加、姜汁啤酒、青柠", abv: 14, sour: 3, sweet: 3, story: "铜杯里的清凉，击碎了沉闷。" },
+            { name: "吉普赛女郎", ing: "伏特加、接骨木花、西柚", abv: 16, sour: 3, sweet: 3, story: "清爽的花香调。" },
+            { name: "维斯帕 (Vesper)", ing: "伏特加、金酒、利莱白", abv: 35, sour: 0, sweet: 1, story: "摇匀，不要搅拌。邦德的选择。" },
+            { name: "海风 (Sea Breeze)", ing: "伏特加、蔓越莓汁、西柚汁", abv: 14, sour: 4, sweet: 3, story: "吹散忧愁的海风。" },
+            { name: "黑色俄罗斯", ing: "伏特加、咖啡酒", abv: 25, sour: 0, sweet: 4, story: "像北国冬夜一样深沉。" },
+            { name: "血腥玛丽", ing: "伏特加、番茄汁、香料", abv: 15, sour: 3, sweet: 1, story: "是饮品，也是餐点。" }
         ],
         "Tequila": [
-            { name: "玛格丽特 (Margarita)", ing: "龙舌兰、君度、青柠", abv: 24, sour: 4, sweet: 2, story: "盐边的苦咸是为了衬托那抹龙舌兰的辛烈。" },
-            { name: "帕洛玛 (Paloma)", ing: "龙舌兰、西柚、苏打水", abv: 14, sour: 4, sweet: 3, story: "西柚的清苦感，是龙舌兰最默契的伴侣。" }
+            { name: "玛格丽特 (Margarita)", ing: "龙舌兰、君度、青柠", abv: 24, sour: 4, sweet: 2, story: "盐边是为了衬托心碎的辛烈。" },
+            { name: "帕洛玛 (Paloma)", ing: "龙舌兰、西柚、苏打水", abv: 14, sour: 4, sweet: 3, story: "西柚清苦，龙舌兰辛辣。" },
+            { name: "裸体与著名的", ing: "梅斯卡尔、阿佩罗、黄药草", abv: 22, sour: 4, sweet: 3, story: "烟熏与草本的奇妙平衡。" },
+            { name: "特基拉日出", ing: "龙舌兰、橙汁、石榴糖", abv: 12, sour: 1, sweet: 5, story: "杯中凝结的墨西哥晨曦。" },
+            { name: "斗牛士 (Matador)", ing: "龙舌兰、菠萝汁、青柠", abv: 15, sour: 3, sweet: 4, story: "果香浓郁，掩盖锋芒。" },
+            { name: "龙舌兰砰", ing: "龙舌兰、汤力水", abv: 15, sour: 1, sweet: 2, story: "适合狂欢的开始。" },
+            { name: "墨西哥骡子", ing: "龙舌兰、姜汁啤酒、青柠", abv: 16, sour: 3, sweet: 3, story: "龙舌兰的烟熏版骡子。" }
         ],
         "Brandy": [
             { name: "边车 (Sidecar)", ing: "白兰地、君度、柠檬", abv: 28, sour: 4, sweet: 2, story: "它是白兰地最优雅的形态。" },
-            { name: "马头琴特调", ing: "白兰地、奶酪利口、奶皮子", abv: 22, sour: 0, sweet: 5, story: "向北方致敬，极致的奶香与高度酒的碰撞。" }
+            { name: "亚历山大 (Alexander)", ing: "白兰地、可可酒、奶油", abv: 18, sour: 0, sweet: 5, story: "液态巧克力般丝滑。" },
+            { name: "长岛冰茶", ing: "五款基酒、可乐、柠檬", abv: 32, sour: 3, sweet: 4, story: "内里是足以点燃夜晚的烈火。" },
+            { name: "马头琴特调", ing: "白兰地、奶酪利口、奶皮子", abv: 22, sour: 0, sweet: 5, story: "极致奶香与烈酒的碰撞。" },
+            { name: "日本 (Japanese)", ing: "白兰地、杏仁糖浆、苦精", abv: 26, sour: 1, sweet: 4, story: "复古配方，带有坚果香。" },
+            { name: "维也纳 (Viennese)", ing: "白兰地、咖啡、糖", abv: 15, sour: 0, sweet: 4, story: "温暖而浓郁的下午茶感。" },
+            { name: "尼古拉斯加", ing: "白兰地、柠檬片、糖", abv: 40, sour: 4, sweet: 4, story: "一口闷下的极致体验。" }
         ]
     };
 
